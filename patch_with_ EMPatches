@@ -1,0 +1,43 @@
+file = r'C:\Users\Omnia\Desktop\Batch 001\NH13-581\NH13-581.scn'
+output = r"C:\Users\Omnia\Desktop\Batch 001\NH13-581/"
+level= 1
+
+#link of patching lib https://github.com/Mr-TalhaIlyas/EMPatches
+
+import numpy as np
+import openslide
+from PIL import Image
+import matplotlib.pyplot as plt 
+from empatches import EMPatches
+import cv2
+
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+# img = cv2.imread('digits.jpg')
+# img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+
+slide = openslide.open_slide(file)
+img_size = slide.level_dimensions[level]
+slide_img = slide.read_region((0, 0), level, img_size)
+
+if isinstance(slide_img, Image.Image):
+      slide_img = np.asarray(slide_img)
+if slide_img.shape[2] == 4:
+    slide_img = slide_img[:, :, :-1]
+
+emp = EMPatches()
+img_patches, indices = emp.extract_patches(slide_img, patchsize=512, overlap=0.0)
+
+#img_patches, indices = emp.extract_patches(np.asarray(slide_img), patchsize=512, overlap=0.0)
+
+original_image_filename = 'NH13-581.scn'
+
+# Get the base name of the original image without the extension
+image_basename = os.path.splitext(original_image_filename)[0]
+
+for idx in range(0, len(img_patches)):
+                    patch_name = f"{image_basename}_{idx}.png"
+                    cv2.imwrite(os.path.join(output,patch_name), img_patches[idx])
+
